@@ -1,0 +1,161 @@
+import React, { useState, useEffect } from 'react';
+
+// Main component for the Silly Button Mayhem
+const SillyButtonMayhem = () => {
+  // --- Shared Utilities ---
+  const sillyTexts = ['Boop!', 'Whee!', 'Ouch!', 'Catch Me!', 'Zoom!', 'Magic!', 'Poof!', 'Haha!'];
+  const chattyMessages = ["I'm talking!", "Hello there!", "Coding is fun!", "Silly, right?", "You got me!"];
+  const emojiOptions = ['😂', '🎉', '💥', '✨', '🤪', '🥳', '🤯', '🤩'];
+
+  const getRandomElement = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const getRandomColor = () => '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+
+  // --- Mayhem Button State & Logic ---
+  const [mayhemText, setMayhemText] = useState('Click Me!');
+  const [mayhemStyle, setMayhemStyle] = useState({
+    position: 'relative', top: '0px', left: '0px', backgroundColor: '#3b82f6', color: 'white', transition: 'all 0.3s ease-out',
+  });
+  const [mayhemContainerKey, setMayhemContainerKey] = useState(0);
+  const [mayhemZoneActive, setMayhemZoneActive] = useState(false);
+
+  const handleMayhemClick = () => {
+    setMayhemText(getRandomElement(sillyTexts));
+    const newBgColor = getRandomColor();
+    const r = parseInt(newBgColor.slice(1, 3), 16), g = parseInt(newBgColor.slice(3, 5), 16), b = parseInt(newBgColor.slice(5, 7), 16);
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    // Attempt to get mayhem-zone width; fallback if not yet rendered or available
+    const mayhemZoneElement = document.querySelector('.mayhem-zone');
+    const mayhemZoneWidth = mayhemZoneElement ? mayhemZoneElement.clientWidth : 300; // Default width if not found
+
+    setMayhemStyle({
+      position: 'absolute',
+      top: `${Math.random() * (window.innerHeight * 0.3 - 50)}px`, // Keep it within the top 30% of viewport (approx)
+      left: `${Math.random() * (mayhemZoneWidth - 150)}px`, // Constrain to mayhem zone width
+      backgroundColor: newBgColor,
+      color: brightness > 125 ? 'black' : 'white',
+      transition: 'all 0.3s ease-out',
+    });
+    setMayhemZoneActive(true);
+    setTimeout(() => setMayhemZoneActive(false), 500); // Zone active visual cue
+  };
+
+  // --- ShrinkyDink Button State & Logic ---
+  const [scale, setScale] = useState(1);
+  const handleShrinkyDinkClick = () => setScale(Math.random() > 0.5 ? (Math.random() * 0.8 + 0.5) : (Math.random() * 0.7 + 1.1));
+
+  // --- Spinner Button State & Logic ---
+  const [rotation, setRotation] = useState(0);
+  const handleSpinnerClick = () => setRotation(prev => prev + (Math.random() > 0.5 ? 360 : -360) + (Math.floor(Math.random()*3-1)*90));
+
+  // --- Ghostly Button State & Logic ---
+  const [opacity, setOpacity] = useState(1);
+  const handleGhostlyClick = () => setOpacity(prev => (prev === 1 ? (Math.random() * 0.5 + 0.1) : 1));
+
+  // --- Chatty Button State & Logic ---
+  const [chatMessage, setChatMessage] = useState({ text: '', visible: false });
+  const handleChattyClick = () => {
+    setChatMessage({ text: getRandomElement(chattyMessages), visible: true });
+    setTimeout(() => setChatMessage({ text: '', visible: false }), 2000); // Message disappears after 2s
+  };
+
+  // --- Emoji Pop Button State & Logic ---
+  const [emojis, setEmojis] = useState([]);
+  const handleEmojiPopClick = (event) => {
+    const buttonRect = event.target.getBoundingClientRect();
+    const newEmojis = Array(3).fill(null).map((_, i) => ({
+      id: Math.random(), // Unique key for each emoji
+      char: getRandomElement(emojiOptions),
+      // Position emojis relative to the button, with some randomness
+      x: buttonRect.left + buttonRect.width / 2 + (Math.random() - 0.5) * 100 - 10, // -10 to center emoji better
+      y: buttonRect.top + (Math.random() - 0.5) * 50 - 15, // -15 to position above button
+    }));
+    setEmojis(currentEmojis => [...currentEmojis, ...newEmojis]);
+    // Remove these specific emojis after animation
+    setTimeout(() => {
+      setEmojis(currentEmojis => currentEmojis.filter(e => !newEmojis.find(ne => ne.id === e.id)));
+    }, 1000); // Duration of emoji visibility (matches animation)
+  };
+
+
+  // --- Reset All Logic ---
+  const resetAll = () => {
+    setMayhemText('Click Me!');
+    setMayhemStyle({ position: 'relative', top: '0px', left: '0px', backgroundColor: '#3b82f6', color: 'white', transition: 'all 0.3s ease-out' });
+    setMayhemContainerKey(prevKey => prevKey + 1);
+    setMayhemZoneActive(false);
+    setScale(1);
+    setRotation(0);
+    setOpacity(1);
+    setChatMessage({ text: '', visible: false });
+    setEmojis([]);
+  };
+
+  // --- Common Button Styles ---
+  // Tailwind classes for consistent button appearance
+  const commonButtonClass = "px-4 py-2 font-semibold rounded-lg shadow-lg focus:outline-none transform transition-all duration-300 ease-out m-2 text-sm sm:text-base";
+
+  return (
+    // Main container: full screen, flexbox for centering, dark background, padding, hidden overflow
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-800 p-2 sm:p-4 overflow-hidden text-white">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-yellow-400">Silly Button Bonanza!</h1>
+      
+      {/* Grid for interactive buttons */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4 mb-6 sm:mb-8 w-full max-w-2xl">
+        <button onClick={handleShrinkyDinkClick} style={{ transform: `scale(${scale})` }} className={`${commonButtonClass} bg-green-500 hover:bg-green-600 active:scale-90`}>Shrink/Grow</button>
+        <button onClick={handleSpinnerClick} style={{ transform: `rotate(${rotation}deg)` }} className={`${commonButtonClass} bg-purple-500 hover:bg-purple-600 active:opacity-75`}>Spin Me</button>
+        <button onClick={handleGhostlyClick} style={{ opacity: opacity }} className={`${commonButtonClass} bg-gray-500 hover:bg-gray-600`}>Ghost Me</button>
+        
+        {/* Container for chatty button and its message for correct positioning */}
+        <div className="relative"> 
+          <button onClick={handleChattyClick} className={`${commonButtonClass} bg-blue-500 hover:bg-blue-600 w-full`}>Chatty Button</button>
+          {/* Display chat message if visible */}
+          {chatMessage.visible && <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-black text-white text-xs rounded px-2 py-1 shadow-lg whitespace-nowrap z-10">{chatMessage.text}</span>}
+        </div>
+
+        <button onClick={handleEmojiPopClick} className={`${commonButtonClass} bg-pink-500 hover:bg-pink-600`}>Emoji Pop!</button>
+        
+        <button onClick={resetAll} className={`${commonButtonClass} bg-red-600 hover:bg-red-700 active:bg-red-800 col-span-2 sm:col-span-1`}>Reset All Fun!</button>
+      </div>
+
+      {/* Mayhem Zone: Container for the Mayhem Button */}
+      <div 
+        key={mayhemContainerKey} // Key to help with re-centering on reset
+        className={`mayhem-zone relative w-full max-w-md h-48 sm:h-56 flex items-center justify-center border-2 rounded-lg p-2 mb-6 sm:mb-8 transition-all duration-300 ${mayhemZoneActive ? 'border-yellow-400 shadow-yellow-400/50 shadow-lg' : 'border-dashed border-gray-600'}`}
+      >
+        <span className="absolute top-1 left-1/2 -translate-x-1/2 text-xs text-gray-400 bg-gray-800 px-2 rounded">Mayhem Zone</span>
+        <button onClick={handleMayhemClick} style={mayhemStyle} className="px-5 py-2 sm:px-6 sm:py-3 font-bold rounded-xl shadow-xl focus:outline-none hover:shadow-2xl text-sm sm:text-base">
+          {mayhemText}
+        </button>
+      </div>
+      
+      {/* Container for Floating Emojis */}
+      {/* Emojis are mapped here and positioned absolutely */}
+      {emojis.map(emoji => (
+        <span 
+          key={emoji.id} 
+          className="absolute text-2xl animate-pingOnce" // Animation class for popping effect
+          style={{ top: emoji.y, left: emoji.x, pointerEvents: 'none' }} // Dynamic positioning
+        >
+          {emoji.char}
+        </span>
+      ))}
+      
+      <p className="mt-auto text-xs text-gray-500">Seriously Silly Coding Productions</p>
+    </div>
+  );
+};
+
+export default SillyButtonMayhem;
+
+// CSS for the emoji animation (add to your tailwind.config.js or a global CSS file)
+/*
+@keyframes pingOnce {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.5); opacity: 1; }
+  75% { transform: scale(1.2); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 0; }
+}
+.animate-pingOnce {
+  animation: pingOnce 1s ease-out forwards;
+}
+*/
