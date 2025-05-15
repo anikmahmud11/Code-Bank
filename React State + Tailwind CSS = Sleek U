@@ -1,0 +1,38 @@
+import React, { useState } from "react";
+
+const LightSwitch = () => {
+  const [isLightOn, setIsLightOn] = useState(false);
+
+  const handleFlipSwitch = () => {
+    setIsLightOn((prevState) => !prevState);
+  };
+
+  // Determine styles based on state
+  const bgColor = isLightOn ? "bg-yellow-400" : "bg-gray-700";
+  const textColor = isLightOn ? "text-gray-900" : "text-yellow-400";
+  const lightEmoji = isLightOn ? "💡" : " oscuridad "; // 'oscuridad' is Spanish for darkness
+  return (
+    <div
+      className={`mx-auto mt-5 p-8 rounded-lg shadow-xl transition-all duration-500 ease-in-out ${bgColor} w-64 h-48 flex flex-col justify-center items-center`}
+    >
+      <p
+        className={`text-2xl font-bold mb-6 ${textColor} transition-colors duration-500`}
+      >
+        The light is: {isLightOn ? `ON ${lightEmoji}` : `OFF ${lightEmoji}`}
+      </p>
+      <button
+        onClick={handleFlipSwitch}
+        className={`px-6 py-3 rounded-md font-semibold text-white transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2
+                    ${
+                      isLightOn
+                        ? "bg-gray-800 hover:bg-gray-900 focus:ring-gray-500"
+                        : "bg-yellow-500 hover:bg-yellow-600 focus:ring-yellow-300"
+                    }`}
+      >
+        Flip Switch
+      </button>
+    </div>
+  );
+};
+
+export default LightSwitch;
